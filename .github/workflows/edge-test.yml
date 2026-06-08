@@ -1,0 +1,44 @@
+name: Test B2 Edge Cache
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+        region:
+          - 1
+          - 2
+          - 3
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Inspect latest.json
+        run: |
+          set -euxo pipefail
+
+          echo "===== MACHINE INFO ====="
+          uname -a || true
+          sw_vers || true
+
+          echo "===== DNS ====="
+          nslookup f005.backblazeb2.com || true
+
+          echo "===== RESPONSE HEADERS ====="
+          curl -I \
+            https://f005.backblazeb2.com/file/hexmos/lrc/latest.json || true
+
+          echo "===== RESPONSE BODY ====="
+          curl -fsSL \
+            https://f005.backblazeb2.com/file/hexmos/lrc/latest.json
+
+          echo ""
+          echo "===== CACHE BYPASS ====="
+          curl -fsSL \
+            "https://f005.backblazeb2.com/file/hexmos/lrc/latest.json?t=$(date +%s)"
