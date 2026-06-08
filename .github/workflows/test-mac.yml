@@ -14,18 +14,40 @@ jobs:
           sw_vers
           uname -a
           whoami
+          pwd
+
+      - name: Download installer
+        run: |
+          set -euxo pipefail
+
+          curl -fsSL \
+            https://raw.githubusercontent.com/HexmosTech/git-lrc/refs/heads/main/scripts/lrc-install.sh \
+            -o lrc-install.sh
+
+          chmod +x lrc-install.sh
+
+          echo "Downloaded script:"
+          head -40 lrc-install.sh
 
       - name: Run installer
         run: |
           set -euxo pipefail
-          curl -fsSL https://hexmos.com/lrc-install.sh | sudo bash
+          sudo bash ./lrc-install.sh
 
       - name: Verify install
         if: always()
         run: |
+          echo "PATH=$PATH"
+
           which lrc || true
           which livereview || true
+
+          command -v lrc || true
+          command -v livereview || true
+
           ls -la /usr/local/bin || true
+          ls -la /opt/homebrew/bin || true
 
       - name: Interactive shell (optional)
+        if: failure()
         uses: mxschmitt/action-tmate@v3
