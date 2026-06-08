@@ -1,0 +1,73 @@
+name: Test Installer Pipe + sudo on macOS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-install:
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Show macOS info
+        run: |
+          set -euxo pipefail
+
+          echo "===== SYSTEM ====="
+          sw_vers
+          uname -a
+          whoami
+          pwd
+
+          echo "===== ENV ====="
+          echo "USER=$USER"
+          echo "HOME=$HOME"
+          echo "SHELL=$SHELL"
+
+          git --version
+
+      - name: Simulate exact production command
+        run: |
+          set -euxo pipefail
+
+          curl -fsSL \
+            https://raw.githubusercontent.com/HexmosTech/git-lrc/refs/heads/main/scripts/lrc-install.sh \
+            | sudo bash
+
+      - name: Verify install
+        if: always()
+        run: |
+          set -euxo pipefail
+
+          echo "===== USER ====="
+          whoami
+          echo "HOME=$HOME"
+
+          echo "===== PATH ====="
+          echo "$PATH"
+
+          echo "===== WHICH ====="
+          which lrc || true
+          command -v lrc || true
+          which git-lrc || true
+
+          echo "===== VERSION ====="
+          lrc version || true
+
+          echo "===== USER BIN ====="
+          ls -la ~/.local/bin || true
+
+          echo "===== ROOT BIN ====="
+          sudo ls -la /var/root/.local/bin || true
+
+          echo "===== ROOT HOME ====="
+          sudo bash -c 'echo $HOME' || true
+
+          echo "===== COMMON PATHS ====="
+          ls -la /usr/local/bin || true
+          ls -la /opt/homebrew/bin || true
+          ls -la /usr/bin/git-lrc || true
+
+      - name: Interactive shell (optional)
+        if: failure()
+        uses: mxschmitt/action-tmate@v3
