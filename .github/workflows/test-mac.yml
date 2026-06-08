@@ -1,0 +1,31 @@
+name: Test Installer on macOS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-install:
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Show macOS info
+        run: |
+          sw_vers
+          uname -a
+          whoami
+
+      - name: Run installer
+        run: |
+          set -euxo pipefail
+          curl -fsSL https://hexmos.com/lrc-install.sh | sudo bash
+
+      - name: Verify install
+        if: always()
+        run: |
+          which lrc || true
+          which livereview || true
+          ls -la /usr/local/bin || true
+
+      - name: Interactive shell (optional)
+        uses: mxschmitt/action-tmate@v3
