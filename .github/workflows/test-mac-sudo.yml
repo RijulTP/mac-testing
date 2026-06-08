@@ -30,9 +30,14 @@ jobs:
         run: |
           set -euxo pipefail
 
+          echo "===== BEFORE ====="
+          whoami
+          echo "HOME=$HOME"
+
+          echo "===== REALISTIC SUDO ENV ====="
           curl -fsSL \
             https://raw.githubusercontent.com/HexmosTech/git-lrc/refs/heads/main/scripts/lrc-install.sh \
-            | sudo bash
+            | sudo -H bash
 
       - name: Verify install
         if: always()
